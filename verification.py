@@ -1,6 +1,5 @@
 from windows_operations import *
 from obj_detection import match_template
-from bot_settings import target_window
 
 import cv2
 import os

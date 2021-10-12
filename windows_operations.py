@@ -9,13 +9,14 @@ import pyautogui
 
 BASE_DIR = Path(__file__).resolve().parent
 
-def take_screenshot(target_window):
-    SOURCE_DIR = os.path.join(BASE_DIR, "static", "source.jpg")
+def take_screenshot(window):
+    hwnd = win32gui.FindWindow(None, window)
+    SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window}.jpg")
 
-    width = int(get_window_size(target_window)["width"])
-    height = int(get_window_size(target_window)["height"])
+    width = int(get_window_size(window)[0])
+    height = int(get_window_size(window)[1])
 
-    wDC = win32gui.GetWindowDC(target_window)
+    wDC = win32gui.GetWindowDC(hwnd)
     dcObj = win32ui.CreateDCFromHandle(wDC)
     cDC = dcObj.CreateCompatibleDC()
     dataBitMap = win32ui.CreateBitmap()
@@ -25,10 +26,12 @@ def take_screenshot(target_window):
     dataBitMap.SaveBitmapFile(cDC, SOURCE_DIR)
     dcObj.DeleteDC()
     cDC.DeleteDC()
-    win32gui.ReleaseDC(target_window, wDC)
+    win32gui.ReleaseDC(hwnd, wDC)
     win32gui.DeleteObject(dataBitMap.GetHandle())
 
     img = Image.open(SOURCE_DIR)
+    print(width)
+    print(height)
     if width / height != 1920 / 1080:
         height_crop = height - 40
         width_crop = height_crop * 1920 / 1080
@@ -46,20 +49,22 @@ def take_screenshot(target_window):
     return
 
 
-def get_window_size(target_window):
-    rect = win32gui.GetWindowRect(target_window)
+def get_window_size(window):
+    hwnd = win32gui.FindWindow(None, window)
+    rect = win32gui.GetWindowRect(hwnd)
     x0, y0, x1, y1 = rect[0], rect[1], rect[2], rect[3]
     w, h = x1 - x0, y1-y0
 
-    context = {
-        "width": w,
-        "height": h,
-    }
+    context = [
+        w,
+        h
+    ]
     return context
 
-def click(x, y, target_window):
-    width = int(get_window_size(target_window)["width"])
-    height = int(get_window_size(target_window)["height"])
+def click(x, y, window):
+    hwnd = win32gui.FindWindow(None, window)
+    width = int(get_window_size(window)[0])
+    height = int(get_window_size(window)[1])
     if width / height != 1920 / 1080:
         height = height - 40
         print(f"height: {height}")
@@ -74,7 +79,7 @@ def click(x, y, target_window):
     print(f"x: {x}, y: {y}")
     lParam = win32api.MAKELONG(x, y)
 
-    target_window1 = win32gui.FindWindowEx(target_window, None, None, None)
-    win32gui.SendMessage(target_window1, win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, lParam)
-    win32gui.SendMessage(target_window1, win32con.WM_LBUTTONUP, None, lParam)
+    hwnd1 = win32gui.FindWindowEx(hwnd, None, None, None)
+    win32gui.SendMessage(hwnd1, win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, lParam)
+    win32gui.SendMessage(hwnd1, win32con.WM_LBUTTONUP, None, lParam)
     return

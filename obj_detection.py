@@ -5,13 +5,13 @@ from PIL import Image, ImageOps
 import pytesseract
 
 BASE_DIR = Path(__file__).resolve().parent
-
+tesseract_location = os.path.join(BASE_DIR, "support","tesseract_install", "tesseract.exe")
 pytesseract.pytesseract.tesseract_cmd = (
-    r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"  # Location of tesseract.eve file
+    tesseract_location  # Location of tesseract.eve file
 )
 
-def match_template(template):
-    SOURCE_DIR = os.path.join(BASE_DIR, "static", "source.jpg")
+def match_template(template, window):
+    SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window}.jpg")
     TEMPLATE_DIR = template
     match_exist = False
     source_img = cv2.imread(SOURCE_DIR, 0)
@@ -36,19 +36,18 @@ def read_text(image):
     return text
 
 
-def text_recognition(cropping):
+def text_recognition(cropping, window):
     x0, y0, x1, y1 = cropping["x0"], cropping["y0"], cropping ["x1"], cropping["y1"]
 
-    SOURCE_DIR = os.path.join(BASE_DIR, "static", "source.jpg")
-    TROOPS_DISPATCHED_DIR = os.path.join(BASE_DIR, "static", "gathers_number.jpg")
+    SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window}.jpg")
+    TROOPS_DISPATCHED_DIR = os.path.join(BASE_DIR, "static", f"gathers_number_{window}.jpg")
     image = Image.open(SOURCE_DIR)
     image_cropped = image.crop((x0, y0, x1, y1))
     image_cropped.save(TROOPS_DISPATCHED_DIR)
 
     image = cv2.imread(TROOPS_DISPATCHED_DIR)
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    ret, thresh_image = cv2.threshold(gray_image, 200, 255, cv2.THRESH_BINARY_INV)
-    thresh_image = cv2.GaussianBlur(thresh_image, (5, 5), 0)
+    ret, thresh_image = cv2.threshold(gray_image, 150, 255, cv2.THRESH_BINARY_INV)
     text = read_text(thresh_image)
     print(text)
 

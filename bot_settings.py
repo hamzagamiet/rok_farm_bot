@@ -3,6 +3,7 @@ from pathlib import Path
 from template_files import template_paths as TEMPLATE
 import win32gui
 import os
+from threading import *
 
 BASE_DIR = Path(__file__).resolve().parent
     
@@ -38,14 +39,3 @@ stone_action = [
     TEMPLATE["new_troops"],
     TEMPLATE["march"],
 ]
-
-#TEST DATA - WILL BE TAKEN FROM interface.py
-requested_actions = [
-    stone_action,
-    food_action,
-    wood_action,
-    gold_action,
-    wood_action,
-]
-
-target_window = win32gui.FindWindow(None, "BlueStacks")
