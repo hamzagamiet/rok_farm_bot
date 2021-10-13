@@ -10,13 +10,12 @@ import pyautogui
 BASE_DIR = Path(__file__).resolve().parent
 
 def take_screenshot(window):
-    hwnd = win32gui.FindWindow(None, window)
     SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window}.jpg")
 
     width = int(get_window_size(window)[0])
     height = int(get_window_size(window)[1])
 
-    wDC = win32gui.GetWindowDC(hwnd)
+    wDC = win32gui.GetWindowDC(window)
     dcObj = win32ui.CreateDCFromHandle(wDC)
     cDC = dcObj.CreateCompatibleDC()
     dataBitMap = win32ui.CreateBitmap()
@@ -26,7 +25,7 @@ def take_screenshot(window):
     dataBitMap.SaveBitmapFile(cDC, SOURCE_DIR)
     dcObj.DeleteDC()
     cDC.DeleteDC()
-    win32gui.ReleaseDC(hwnd, wDC)
+    win32gui.ReleaseDC(window, wDC)
     win32gui.DeleteObject(dataBitMap.GetHandle())
 
     img = Image.open(SOURCE_DIR)
@@ -50,11 +49,9 @@ def take_screenshot(window):
 
 
 def get_window_size(window):
-    hwnd = win32gui.FindWindow(None, window)
-    rect = win32gui.GetWindowRect(hwnd)
+    rect = win32gui.GetWindowRect(window)
     x0, y0, x1, y1 = rect[0], rect[1], rect[2], rect[3]
     w, h = x1 - x0, y1-y0
-
     context = [
         w,
         h
@@ -62,9 +59,8 @@ def get_window_size(window):
     return context
 
 def click(x, y, window):
-    hwnd = win32gui.FindWindow(None, window)
-    width = int(get_window_size(window)[0])
-    height = int(get_window_size(window)[1])
+    width = get_window_size(window)[0]
+    height = get_window_size(window)[1]
     if width / height != 1920 / 1080:
         height = height - 40
         print(f"height: {height}")
@@ -79,7 +75,7 @@ def click(x, y, window):
     print(f"x: {x}, y: {y}")
     lParam = win32api.MAKELONG(x, y)
 
-    hwnd1 = win32gui.FindWindowEx(hwnd, None, None, None)
-    win32gui.SendMessage(hwnd1, win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, lParam)
-    win32gui.SendMessage(hwnd1, win32con.WM_LBUTTONUP, None, lParam)
+    window1 = win32gui.FindWindowEx(window, None, None, None)
+    win32gui.SendMessage(window1, win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, lParam)
+    win32gui.SendMessage(window1, win32con.WM_LBUTTONUP, None, lParam)
     return

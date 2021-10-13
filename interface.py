@@ -3,11 +3,11 @@ from tkinter import ttk
 from pathlib import Path
 import os
 from game_operations import main
-from bot_settings import wood_action, stone_action, gold_action, food_action
 from multiprocessing import Process
 import threading
 import time
 import win32gui
+import json
 
 #INITIAL DECLARATIONS
 BASE_DIR = Path(__file__).resolve().parent
@@ -117,11 +117,37 @@ class FarmingWindow(Frame):
 
     def start_bot(self):
         requested_actions = self.march_info()
-        print ("attempt")
         if self.start_stop.cget("text") == "START":
             self.start_stop.config(text="STOP")
+            if requested_actions != []:
+                current_data_dict = {
+                    self.window: {
+                        n: {
+                            "resource": requested_actions[n],
+                            "status": "waiting",
+                            "co-ords": [],
+                            "commander": "none"
+                        } for n in range(len(requested_actions))
+                    }
+                }
+                current_data = [current_data_dict]
+                try:
+                    with open("data.json", "r") as file:
+                        data = json.load(file)
+                        data.insert(0,current_data_dict)
+                except:
+                    print("couldn't load")
+                with open("data.json", "w+") as file:
+                    try:
+                        print("existing")
+                        json.dump(data, file, indent=4, separators=(',', ': '))
+                    except:
+                        print("broken")
+                        json.dump(current_data, file, indent=4, separators=(',', ': '))
+
         elif self.start_stop.cget("text") == "STOP":
             self.start_stop.config(text="START")
+            
         break_loop = False
         while self.start_stop.cget("text") == "STOP":
             root.update()
@@ -131,11 +157,9 @@ class FarmingWindow(Frame):
                     print ("me too")
                     main(action, len(requested_actions), self.window)
                 if self.start_stop.cget("text") == "START":
-                    print ("breaking loop")
                     break_loop = True
                     break
             if break_loop:
-                print ("broken loop")
                 break
 
     def march_info(self):
@@ -164,13 +188,13 @@ class FarmingWindow(Frame):
         requested_actions = []
         for node in active_node_list:
             if node == "wood":
-                requested_actions.append(wood_action)
+                requested_actions.append("wood")
             elif node == "food":
-                requested_actions.append(food_action)
+                requested_actions.append("food")
             elif node == "stone":
-                requested_actions.append(stone_action)
+                requested_actions.append("stone")
             elif node == "gold":
-                requested_actions.append(gold_action)
+                requested_actions.append("gold")
 
         return requested_actions
 

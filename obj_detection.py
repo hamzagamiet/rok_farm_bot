@@ -32,7 +32,7 @@ def match_template(template, window):
 
 def read_text(image):
     custom_config = r"--oem 3 kor+chi_sim+eng+jpn+vie --psm 6"
-    text = pytesseract.image_to_string(image, lang="eng+kor+vie+jap+sun_chi")
+    text = pytesseract.image_to_string(image, lang="eng")
     return text
 
 

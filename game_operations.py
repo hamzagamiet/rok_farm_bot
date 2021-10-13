@@ -5,18 +5,28 @@ from template_files import template_paths as TEMPLATE
 import os
 from PIL import Image, ImageOps
 from pathlib import Path
+from bot_settings import get_action_list
 import time
-BASE_DIR = Path(__file__).resolve().parent
-action = []
-no_actions = 0
-window = ""
+import json
 
-def main(action, no_actions, window):
-    time.sleep(1)
-    if within_limit(no_actions, window):
-        execute_action(action, window)
-    else:
-        print(f"already have {no_actions} marches dispatched")
+BASE_DIR = Path(__file__).resolve().parent
+
+def main():
+    with open("data.json", "r") as file:
+        data = json.load(file)[0]
+    for key in data:
+        window = key
+    window_key = window
+    window = win32gui.FindWindow(None, window_key)
+    resource_list = [data[window_key][n]["resource"] for n in data[window_key]]
+    requested_actions = get_action_list(resource_list)
+    while True:
+        for action in requested_actions:
+            time.sleep(1)
+            if within_limit(len(requested_actions), window):
+                execute_action(action, window)
+            else:
+                print(f"already have {len(requested_actions)} marches dispatched")
 
 def return_to_game(func):
     def wrapper(action, window):
@@ -63,7 +73,7 @@ def troops_available(func):
             troops_dispatched = 0
             tot_troop_slots = 1
         print (troops_dispatched, tot_troop_slots)
-        if tot_troop_slots == "s":
+        if tot_troop_slots == "s" or "S":
             tot_troop_slots = 5
             print("YOUR TROOPS")
         print (troops_dispatched)
@@ -114,4 +124,4 @@ def execute_step(template, click_center, window):
         print("no match found")
         
 if __name__ == "__main__":
-   main(action, no_actions, window)
+   main()

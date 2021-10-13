@@ -3,7 +3,6 @@ from pathlib import Path
 from template_files import template_paths as TEMPLATE
 import win32gui
 import os
-from threading import *
 
 BASE_DIR = Path(__file__).resolve().parent
     
@@ -39,3 +38,16 @@ stone_action = [
     TEMPLATE["new_troops"],
     TEMPLATE["march"],
 ]
+
+def get_action_list(resource_list):
+    action_list = []
+    for resource in resource_list:
+        if resource == "wood":
+            action_list.append(wood_action)
+        elif resource == "food":
+            action_list.append(food_action)
+        elif resource == "stone":
+            action_list.append(stone_action)
+        elif resource == "gold":
+            action_list.append(gold_action)
+    return action_list
