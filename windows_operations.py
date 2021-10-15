@@ -9,9 +9,9 @@ import pyautogui
 
 BASE_DIR = Path(__file__).resolve().parent
 
-def take_screenshot(window):
-    SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window}.jpg")
-
+def take_screenshot(window_key):
+    SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window_key}.jpg")
+    window = win32gui.FindWindow(None, window_key)
     width = int(get_window_size(window)[0])
     height = int(get_window_size(window)[1])
 

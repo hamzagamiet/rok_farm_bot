@@ -10,8 +10,8 @@ pytesseract.pytesseract.tesseract_cmd = (
     tesseract_location  # Location of tesseract.eve file
 )
 
-def match_template(template, window):
-    SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window}.jpg")
+def match_template(template, window_key):
+    SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window_key}.jpg")
     TEMPLATE_DIR = template
     match_exist = False
     source_img = cv2.imread(SOURCE_DIR, 0)
@@ -20,13 +20,14 @@ def match_template(template, window):
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
     print(f"max loc: {max_loc}")
     print(f"max_val: {max_val}")
-    if max_val > 0.9:
+    if max_val > 0.95:
         match_exist = True
     template_h, template_w = template_img.shape
     location = [max_loc[0] + template_w / 2, (max_loc[1] + template_h / 2)]
     context = {
         "exist": match_exist,
         "loc": location,
+        "max_val": max_val
     }
     return context
 
@@ -36,11 +37,12 @@ def read_text(image):
     return text
 
 
-def text_recognition(cropping, window):
+def text_recognition(cropping, window_key):
     x0, y0, x1, y1 = cropping["x0"], cropping["y0"], cropping ["x1"], cropping["y1"]
 
-    SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window}.jpg")
-    TROOPS_DISPATCHED_DIR = os.path.join(BASE_DIR, "static", f"gathers_number_{window}.jpg")
+    SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window_key}.jpg")
+    print (window_key)
+    TROOPS_DISPATCHED_DIR = os.path.join(BASE_DIR, "static", f"gathers_number_{window_key}.jpg")
     image = Image.open(SOURCE_DIR)
     image_cropped = image.crop((x0, y0, x1, y1))
     image_cropped.save(TROOPS_DISPATCHED_DIR)

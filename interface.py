@@ -5,26 +5,30 @@ import os
 from game_operations import main
 from multiprocessing import Process
 import threading
-import time
-import win32gui
 import json
+from subprocess import Popen
 
 #INITIAL DECLARATIONS
 BASE_DIR = Path(__file__).resolve().parent
-ICON_DIR = os.path.join(BASE_DIR, "icons", "rokbot_logo.png")
 root = Tk()
 
-def create_combobox(root, options):
+def create_combobox(root, options, current_val = None):
+    print (current_val)
     node = ttk.Combobox(root, value = options)
-    node.current()
+    node.current(current_val)
     return node
+
+def combobox_value_index(options, value):
+    for index in range(len(options)):
+        if options[index] == value:
+            return index
+    return None
 
 def change_window(frame):
     frame.tkraise()
 
 
 root.title("ROKBot")
-root.call('wm', 'iconphoto', root._w, PhotoImage(file=ICON_DIR))
 
 root.geometry("500x500")
 root.minsize(500,500)
@@ -80,6 +84,8 @@ class FarmingWindow(Frame):
     def __init__(self, root, window):
         Frame.__init__(self)
         n = 100
+        self.page_title = Label(root, text = window)
+        self.window = window
         self.options = ["Wood", "Food", "Stone","Gold"]
         self.int_val1 = IntVar()
         self.int_val2 = IntVar()
@@ -97,21 +103,45 @@ class FarmingWindow(Frame):
         self.is_active5 = Checkbutton(root,variable=self.int_val5, onvalue=1, offvalue=0, text= "March 5")
         self.node5 = create_combobox(root, self.options)
         self.start_stop = Button(root, text= "START", command=self.start_bot_thread)
-        self.page_title = Label(root, text = window)
-        self.window = window
-        self.page_title.grid(row = n+1, column = 1, pady = 2, sticky="nsew")
-        self.is_active1.grid(row = n+3, column = 1, pady = 2, sticky="nsew")
-        self.node1.grid(row = n+3, column = 3, pady = 2, sticky="nsew")
-        self.is_active2.grid(row = n+4, column = 1, pady = 2, sticky="nsew")
-        self.node2.grid(row = n+4, column = 3, pady = 2, sticky="nsew")
-        self.is_active3.grid(row = n+5, column = 1, pady = 2, sticky="nsew")
-        self.node3.grid(row = n+5, column = 3, pady = 2, sticky="nsew")
-        self.is_active4.grid(row = n+6, column = 1, pady = 2, sticky="nsew")
-        self.node4.grid(row = n+6, column = 3, pady = 2, sticky="nsew")
-        self.is_active5.grid(row = n+7, column = 1, pady = 2, sticky="nsew")
-        self.node5.grid(row = n+7, column = 3, pady = 2, sticky="nsew")
-        self.start_stop.grid(row = n+8, column = 1, padx=25, pady = 2, sticky="nsew")
-    
+        self.page_title.grid(row = 2, column = 1, pady = 2, sticky="nsew")
+        self.is_active1.grid(row = 3, column = 1, pady = 2, sticky="nsew")
+        self.node1.grid(row = 3, column = 3, pady = 2, sticky="nsew")
+        self.is_active2.grid(row = 4, column = 1, pady = 2, sticky="nsew")
+        self.node2.grid(row = 4, column = 3, pady = 2, sticky="nsew")
+        self.is_active3.grid(row = 5, column = 1, pady = 2, sticky="nsew")
+        self.node3.grid(row = 5, column = 3, pady = 2, sticky="nsew")
+        self.is_active4.grid(row = 6, column = 1, pady = 2, sticky="nsew")
+        self.node4.grid(row = 6, column = 3, pady = 2, sticky="nsew")
+        self.is_active5.grid(row = 7, column = 1, pady = 2, sticky="nsew")
+        self.node5.grid(row = 7, column = 3, pady = 2, sticky="nsew")
+        self.start_stop.grid(row = 8, column = 1, padx=25, pady = 2, sticky="nsew")
+        
+        try:
+            with open("gui_data.json", "r") as file:
+                data = json.load(file)
+                for n in range(len(data)):
+                    for key in data[n]:
+                        if key == self.window:
+                            if data[n][key]["int_val1"] == 1:
+                                self.is_active1.select()
+                            if data[n][key]["int_val2"] == 1:
+                                self.is_active2.select()
+                            if data[n][key]["int_val3"] == 1:
+                                self.is_active3.select()
+                            if data[n][key]["int_val4"] == 1:
+                                self.is_active4.select()
+                            if data[n][key]["int_val5"] == 1:
+                                self.is_active5.select()
+                            if data[n][key]["start_stop"] == "STOP":
+                                self.start_stop.config(text="STOP")
+                            self.node1.current(combobox_value_index(self.options, data[n][key]["node1"]))
+                            self.node2.current(combobox_value_index(self.options, data[n][key]["node2"]))
+                            self.node3.current(combobox_value_index(self.options, data[n][key]["node3"]))
+                            self.node4.current(combobox_value_index(self.options, data[n][key]["node4"]))
+                            self.node5.current(combobox_value_index(self.options, data[n][key]["node5"]))
+        except:
+            print("this file is not currently running")
+
     def start_bot_thread(self):
         threading.Thread(target=self.start_bot()).start()
 
@@ -136,31 +166,85 @@ class FarmingWindow(Frame):
                         data = json.load(file)
                         data.insert(0,current_data_dict)
                 except:
-                    print("couldn't load")
+                    print("couldn't load data")
                 with open("data.json", "w+") as file:
                     try:
-                        print("existing")
+                        print("existing data")
                         json.dump(data, file, indent=4, separators=(',', ': '))
                     except:
-                        print("broken")
+                        print("broken data")
                         json.dump(current_data, file, indent=4, separators=(',', ': '))
-
+                
+                current_gui_data_dict = {
+                    self.window:{
+                        "int_val1": self.int_val1.get(),
+                        "int_val2": self.int_val2.get(),
+                        "int_val3": self.int_val3.get(),
+                        "int_val4": self.int_val4.get(),
+                        "int_val5": self.int_val5.get(),
+                        "node1": self.node1.get(),
+                        "node2": self.node2.get(),
+                        "node3": self.node3.get(),
+                        "node4": self.node4.get(),
+                        "node5": self.node5.get(),
+                        "start_stop": self.start_stop.cget("text")
+                    }
+                }
+                current_gui_data = [current_gui_data_dict]
+                try:
+                    with open("gui_data.json", "r") as file:
+                        gui_data = json.load(file)
+                        gui_data.insert(0,current_gui_data_dict)
+                except:
+                    print("couldn't load gui data")
+                file.close()
+                with open("gui_data.json", "w+") as file:
+                    try:
+                        #work if existing file
+                        json.dump(gui_data, file, indent=4, separators=(',', ': '))
+                        print("existing gui data")
+                    except:
+                        #work if creating from scratch
+                        json.dump(current_gui_data, file, indent=4, separators=(',', ': '))
+                        print("broken gui data")
+                file.close()
+                Popen("python game_operations.py")
+        
         elif self.start_stop.cget("text") == "STOP":
             self.start_stop.config(text="START")
-            
-        break_loop = False
-        while self.start_stop.cget("text") == "STOP":
-            root.update()
-            for action in requested_actions:
-                if self.start_stop.cget("text") == "STOP":
-                    root.update()
-                    print ("me too")
-                    main(action, len(requested_actions), self.window)
-                if self.start_stop.cget("text") == "START":
-                    break_loop = True
-                    break
-            if break_loop:
-                break
+            try:
+                with open("data.json", "r") as file:
+                    data = json.load(file)
+                    for n in range(len(data)):
+                        for key in data[n]:
+                            if key == self.window:
+                                del data[n]
+                                file.close()
+                                with open("data.json", "w+") as file:
+                                    try:
+                                        json.dump(data, file, indent=4, separators=(',', ': '))
+                                    finally:
+                                        file.close()
+            except:
+                pass
+            try:
+                with open("gui_data.json", "r") as file:
+                    print ("try")
+                    gui_data = json.load(file)
+                    print ("here")
+                    for n in range(len(gui_data)):
+                        for key in gui_data[n]:
+                            if key == self.window:
+                                print("deleting")
+                                del gui_data[n]
+                                file.close()
+                                with open("gui_data.json", "w+") as file:
+                                    try:
+                                        json.dump(gui_data, file, indent=4, separators=(',', ': '))
+                                    except:
+                                        pass
+            except:
+                pass
 
     def march_info(self):
         march_list = [
@@ -208,6 +292,19 @@ class FarmingInfo:
         self.is_active = False
         self.resource =  "None"
         self.commander = "None"
+
+def delete_on_exit():
+    try:
+        os.remove("data.json")
+    except:
+        print("cannot find")
+    try:
+        os.remove("gui_data.json")
+    except:
+        print("cannot find")
+    root.destroy()
+
+root.protocol("WM_DELETE_WINDOW", delete_on_exit)
 
 if __name__ == "__main__":
     root.mainloop()
