@@ -89,7 +89,7 @@ class Home(Frame):
             self.instance_treeview.heading("State", text = "State", anchor= W)
             self.instance_treeview.insert(parent="",index="end", iid=0, text="", values=("Bluestacks", 0, 0))
             self.instance_treeview.insert(parent="",index="end", iid=1, text="", values=("Bluestacks 1", 0, 0))
-            self.instance_treeview.grid(row = 1, column = 1, columnspan = 4, padx =25, pady = 2, sticky="nsew")
+            self.instance_treeview.grid(row = 1, column = 1, columnspan = 8, padx =25, pady = 2, sticky="nsew")
             self.instance_treeview.bind("<Double-1>", self.OnDoubleClick)
 
     def key_submission(self):
@@ -154,11 +154,11 @@ class FarmingWindow(Frame):
         self.node3.grid(row = 5, column = 3, pady = 2, sticky="nsew")
         self.node4.grid(row = 6, column = 3, pady = 2, sticky="nsew")
         self.node5.grid(row = 7, column = 3, pady = 2, sticky="nsew")
-        self.march_1_level.grid(row = 3, column = 4, pady = 2, sticky="nsew")
-        self.march_2_level.grid(row = 4, column = 4, pady = 2, sticky="nsew")
-        self.march_3_level.grid(row = 5, column = 4, pady = 2, sticky="nsew")
-        self.march_4_level.grid(row = 6, column = 4, pady = 2, sticky="nsew")
-        self.march_5_level.grid(row = 7, column = 4, pady = 2, sticky="nsew")
+        self.march_1_level.grid(row = 3, column = 4, pady = 2, sticky="nsew", padx =5)
+        self.march_2_level.grid(row = 4, column = 4, pady = 2, sticky="nsew", padx =5)
+        self.march_3_level.grid(row = 5, column = 4, pady = 2, sticky="nsew", padx =5)
+        self.march_4_level.grid(row = 6, column = 4, pady = 2, sticky="nsew", padx =5)
+        self.march_5_level.grid(row = 7, column = 4, pady = 2, sticky="nsew", padx =5)
         self.start_stop.grid(row = 8, column = 1, padx=25, pady = 2, sticky="nsew")
         
         try:
@@ -179,11 +179,11 @@ class FarmingWindow(Frame):
                                 self.is_active5.select()
                             if data[n][key]["start_stop"] == "STOP":
                                 self.start_stop.config(text="STOP")
-                            self.node1.current(combobox_value_index(self.rss_options, data[n][key]["node1"]))
-                            self.node2.current(combobox_value_index(self.rss_options, data[n][key]["node2"]))
-                            self.node3.current(combobox_value_index(self.rss_options, data[n][key]["node3"]))
-                            self.node4.current(combobox_value_index(self.rss_options, data[n][key]["node4"]))
-                            self.node5.current(combobox_value_index(self.rss_options, data[n][key]["node5"]))
+                            self.node1.current(combobox_value_index(self.rss_options, data[n][key]["node1"]), 3)
+                            self.node2.current(combobox_value_index(self.rss_options, data[n][key]["node2"]), 3)
+                            self.node3.current(combobox_value_index(self.rss_options, data[n][key]["node3"]), 3)
+                            self.node4.current(combobox_value_index(self.rss_options, data[n][key]["node4"]), 3)
+                            self.node5.current(combobox_value_index(self.rss_options, data[n][key]["node5"]), 3)
         except:
             print("this file is not currently running")
 
@@ -196,16 +196,16 @@ class FarmingWindow(Frame):
             self.start_stop.config(text="STOP")
             with open('license.txt', "a+") as file:
                 file.seek(0)
-                license_key = file.read()                
+                license_key = file.read()             
             submit_data = {
                 "license_key": license_key,
                 "window": self.window,
                 "window_active": True,
-                "march_1_selected": self.int_val1.get(),
-                "march_2_selected": self.int_val2.get(),
-                "march_3_selected": self.int_val3.get(),
-                "march_4_selected": self.int_val4.get(),
-                "march_5_selected": self.int_val5.get(),
+                "march_1_selected": True if self.int_val1.get() == 1 else False,
+                "march_2_selected": True if self.int_val2.get() == 1 else False,
+                "march_3_selected": True if self.int_val3.get() == 1 else False,
+                "march_4_selected": True if self.int_val4.get() == 1 else False,
+                "march_5_selected": True if self.int_val5.get() == 1 else False,
                 "march_1_running": False,
                 "march_2_running": False,
                 "march_3_running": False,
