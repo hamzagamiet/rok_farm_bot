@@ -65,6 +65,7 @@ class Home(Frame):
             key_activated = False
             if len(text) > 0:
                 response = requests.get(f"https://www.therokhub.com/secretaccess/farm/check_license/{text}")
+                print(response)
                 response_json = response.json()
                 if response_json["status"] == "active":
                     key_activated = True
@@ -136,11 +137,11 @@ class FarmingWindow(Frame):
         self.node3 = create_combobox(root, self.rss_options)      
         self.node4 = create_combobox(root, self.rss_options) 
         self.node5 = create_combobox(root, self.rss_options)
-        self.march_1_level = create_combobox(root, self.level_options)        
-        self.march_2_level = create_combobox(root, self.level_options)        
-        self.march_3_level = create_combobox(root, self.level_options)        
-        self.march_4_level = create_combobox(root, self.level_options)   
-        self.march_5_level = create_combobox(root, self.level_options)   
+        self.march_1_level = create_combobox(root, self.level_options, 0)        
+        self.march_2_level = create_combobox(root, self.level_options, 0)        
+        self.march_3_level = create_combobox(root, self.level_options, 0)        
+        self.march_4_level = create_combobox(root, self.level_options, 0)   
+        self.march_5_level = create_combobox(root, self.level_options, 0)   
         self.start_stop = Button(root, text= "START", command=self.start_bot_thread)
         #PLACEMENT
         self.page_title.grid(row = 2, column = 1, pady = 2, sticky="nsew")
@@ -179,11 +180,11 @@ class FarmingWindow(Frame):
                                 self.is_active5.select()
                             if data[n][key]["start_stop"] == "STOP":
                                 self.start_stop.config(text="STOP")
-                            self.node1.current(combobox_value_index(self.rss_options, data[n][key]["node1"]), 3)
-                            self.node2.current(combobox_value_index(self.rss_options, data[n][key]["node2"]), 3)
-                            self.node3.current(combobox_value_index(self.rss_options, data[n][key]["node3"]), 3)
-                            self.node4.current(combobox_value_index(self.rss_options, data[n][key]["node4"]), 3)
-                            self.node5.current(combobox_value_index(self.rss_options, data[n][key]["node5"]), 3)
+                            self.node1.current(combobox_value_index(self.rss_options, data[n][key]["node1"]))
+                            self.node2.current(combobox_value_index(self.rss_options, data[n][key]["node2"]))
+                            self.node3.current(combobox_value_index(self.rss_options, data[n][key]["node3"]))
+                            self.node4.current(combobox_value_index(self.rss_options, data[n][key]["node4"]))
+                            self.node5.current(combobox_value_index(self.rss_options, data[n][key]["node5"]))
         except:
             print("this file is not currently running")
 
@@ -216,55 +217,28 @@ class FarmingWindow(Frame):
                 "march_3_target": self.node3.get(),
                 "march_4_target": self.node4.get(),
                 "march_5_target": self.node5.get(),
-                "march_1_level": self.march_1_level.get(),
-                "march_2_level": self.march_2_level.get(),
-                "march_3_level": self.march_3_level.get(),
-                "march_4_level": self.march_4_level.get(),
-                "march_5_level": self.march_5_level.get(),
+                "march_1_level": int(self.march_1_level.get()),
+                "march_2_level": int(self.march_2_level.get()),
+                "march_3_level": int(self.march_3_level.get()),
+                "march_4_level": int(self.march_4_level.get()),
+                "march_5_level": int(self.march_5_level.get()),
             }
-            print (submit_data)
             if len(license_key) > 0:
-                result = requests.post(f"https://www.therokhub.com/secretaccess/farm/data/{license_key}", data= submit_data)
-                print("sent info")
-
-                print (result)
+                requests.post(f"https://www.therokhub.com/secretaccess/farm/data", data= submit_data)
             Popen("python game_operations.py")
         
         elif self.start_stop.cget("text") == "STOP":
             self.start_stop.config(text="START")
-            try:
-                with open("data.json", "r") as file:
-                    data = json.load(file)
-                    for n in range(len(data)):
-                        for key in data[n]:
-                            if key == self.window:
-                                del data[n]
-                                file.close()
-                                with open("data.json", "w+") as file:
-                                    try:
-                                        json.dump(data, file, indent=4, separators=(',', ': '))
-                                    finally:
-                                        file.close()
-            except:
-                pass
-            try:
-                with open("gui_data.json", "r") as file:
-                    print ("try")
-                    gui_data = json.load(file)
-                    print ("here")
-                    for n in range(len(gui_data)):
-                        for key in gui_data[n]:
-                            if key == self.window:
-                                print("deleting")
-                                del gui_data[n]
-                                file.close()
-                                with open("gui_data.json", "w+") as file:
-                                    try:
-                                        json.dump(gui_data, file, indent=4, separators=(',', ': '))
-                                    except:
-                                        pass
-            except:
-                pass
+            with open('license.txt', "a+") as file:
+                file.seek(0)
+                license_key = file.read()
+            submit_data = {
+                "license_key": license_key,
+                "window": self.window,
+            }
+            print(submit_data)       
+            if len(license_key) > 0:
+                requests.post("https://www.therokhub.com/secretaccess/farm/data/delete", data= submit_data)
 
     def march_info(self):
         march_list = [
@@ -303,25 +277,16 @@ class FarmingWindow(Frame):
         return requested_actions
 
 show_frame(Home(root))
-# Button(f2, text="window1", command=f1).pack()
-# Button(f1, text="window2", command=f2).pack()
-
-class FarmingInfo:
-    def __init__(self):
-        self.coordinates = []
-        self.is_active = False
-        self.resource =  "None"
-        self.commander = "None"
 
 def delete_on_exit():
-    try:
-        os.remove("data.json")
-    except:
-        print("cannot find")
-    try:
-        os.remove("gui_data.json")
-    except:
-        print("cannot find")
+    with open('license.txt', "r+") as file:
+        file.seek(0)
+        license_key = file.read()
+    submit_data = {
+        "license_key": license_key,
+    }     
+    if len(license_key) > 0:
+        requests.post("https://www.therokhub.com/secretaccess/farm/data/delete/all", data= submit_data)
     root.destroy()
 
 root.protocol("WM_DELETE_WINDOW", delete_on_exit)

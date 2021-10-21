@@ -14,11 +14,9 @@ import sys
 BASE_DIR = Path(__file__).resolve().parent
 
 def main():
-    with open("data.json", "r") as file:
-        data = json.load(file)[0]
-    for key in data:
-        window = key
-    window_key = window
+    #pull data from API
+    #window = window_key
+    #resource list from API
     window = win32gui.FindWindow(None, window_key)
     resource_list = [data[window_key][n]["resource"] for n in data[window_key]]
     requested_actions = get_action_list(resource_list)
