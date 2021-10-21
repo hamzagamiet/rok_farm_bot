@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent
 def main():
     #pull data from API
     #window = window_key
-    #resource list from API
+    #resource list from API 
     window = win32gui.FindWindow(None, window_key)
     resource_list = [data[window_key][n]["resource"] for n in data[window_key]]
     requested_actions = get_action_list(resource_list)
