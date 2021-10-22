@@ -42,13 +42,13 @@ stone_action = [
 def get_action_list(resource_list):
     action_list = []
     for resource in resource_list:
-        if resource == "wood":
+        if resource.lower() == "wood":
             action_list.append(wood_action)
-        elif resource == "food":
+        elif resource.lower() == "food":
             action_list.append(food_action)
-        elif resource == "stone":
+        elif resource.lower() == "stone":
             action_list.append(stone_action)
-        elif resource == "gold":
+        elif resource.lower() == "gold":
             action_list.append(gold_action)
     return action_list
 

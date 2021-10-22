@@ -4,6 +4,7 @@ from screen_loc import locations as loc
 from obj_detection import *
 from template_files import template_paths as TEMPLATE
 import os
+import requests
 from PIL import Image, ImageOps
 from pathlib import Path
 from bot_settings import get_action_list
@@ -16,9 +17,20 @@ BASE_DIR = Path(__file__).resolve().parent
 def main():
     #pull data from API
     #window = window_key
-    #resource list from API 
+    #resource list from API
+    with open('license.txt', "r+") as file:
+        file.seek(0)
+        license_key = file.read()
+    url = f"https://www.therokhub.com/secretaccess/farm/data/init_load/{license_key}"
+    response = requests.get(url)
+    print("HERE")
+    print (response)
+    response_json = response.json()
+    print (response_json)
+    window_key = response_json["window"]
+    resource_list = [response_json[f"march_{x+1}_target"] for x in range(5) if response_json[f"march_{x+1}_selected"]]
+
     window = win32gui.FindWindow(None, window_key)
-    resource_list = [data[window_key][n]["resource"] for n in data[window_key]]
     requested_actions = get_action_list(resource_list)
     while True:
         for action in requested_actions:
@@ -115,21 +127,17 @@ def within_limit(no_actions, window, window_key):
     return True
     
 def keep_running(window_key):
-    match = False
-    with open("data.json", "r") as file:
-        data_list = json.load(file)
-        for data in data_list:
-            print(data)
-            for key in data:
-                print(key)
-                if key == window_key:
-                    match = True
-                    break
-            if match:
-                break
-        if match == False:
-            print("ending")
+    try:
+        with open('license.txt', "r+") as file:
+            file.seek(0)
+            license_key = file.read()
+        url = f"https://www.therokhub.com/secretaccess/farm/data/load/{license_key}/{window_key}"
+        response = requests.get(url)
+        response_json = response.json()
+        if not response_json["window_active"]:
             sys.exit()
+    except:
+        sys.exit()
 
 @check_verification
 @return_to_game

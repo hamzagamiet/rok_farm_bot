@@ -64,7 +64,8 @@ class Home(Frame):
             print(text)
             key_activated = False
             if len(text) > 0:
-                response = requests.get(f"https://www.therokhub.com/secretaccess/farm/check_license/{text}")
+                url = f"https://www.therokhub.com/secretaccess/farm/check_license/{text}"
+                response = requests.get(url)
                 print(response)
                 response_json = response.json()
                 if response_json["status"] == "active":
@@ -95,7 +96,8 @@ class Home(Frame):
 
     def key_submission(self):
         key_submit = self.key_entry.get()
-        response = requests.get(f"https://www.therokhub.com/secretaccess/farm/check_license/{key_submit}")
+        url = f"https://www.therokhub.com/secretaccess/farm/check_license/{key_submit}"
+        response = requests.get(url)
         response_json = response.json()
         if response_json["status"] == "active":
             print ("ACTIVATED")
@@ -192,7 +194,6 @@ class FarmingWindow(Frame):
         threading.Thread(target=self.start_bot()).start()
 
     def start_bot(self):
-        requested_actions = self.march_info()
         if self.start_stop.cget("text") == "START":
             self.start_stop.config(text="STOP")
             with open('license.txt', "a+") as file:
@@ -239,42 +240,6 @@ class FarmingWindow(Frame):
             print(submit_data)       
             if len(license_key) > 0:
                 requests.post("https://www.therokhub.com/secretaccess/farm/data/delete", data= submit_data)
-
-    def march_info(self):
-        march_list = [
-            self.int_val1.get(),
-            self.int_val2.get(),
-            self.int_val3.get(),
-            self.int_val4.get(),
-            self.int_val5.get(),
-        ]
-        node_list = [
-            self.node1.get(),
-            self.node2.get(),
-            self.node3.get(),
-            self.node4.get(),
-            self.node5.get(),
-        ]
-
-        active_node_list = []
-        for n in range(len(march_list)):
-            if march_list[n] == 1:
-                for option in self.rss_options:
-                    if node_list[n].lower() == option.lower():
-                        active_node_list.append(option.lower())
-
-        requested_actions = []
-        for node in active_node_list:
-            if node == "wood":
-                requested_actions.append("wood")
-            elif node == "food":
-                requested_actions.append("food")
-            elif node == "stone":
-                requested_actions.append("stone")
-            elif node == "gold":
-                requested_actions.append("gold")
-
-        return requested_actions
 
 show_frame(Home(root))
 
