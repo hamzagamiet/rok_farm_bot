@@ -25,7 +25,12 @@ def check_verification(func):
             while True:
                 if complete_verification(window, window_key):
                     click(submit_button_match["loc"][0], submit_button_match["loc"][1], window)
-                    break
+                    time.sleep(10)
+                    take_screenshot(window_key)
+                    TEMPLATE_DIR = os.path.join(BASE_DIR, "assets", "submit_verification.jpg")
+                    submit_button_match = match_template(TEMPLATE_DIR, window_key)
+                    if not submit_button_match["exist"]:
+                        break
         func(action, window, window_key)
                 
         
