@@ -148,6 +148,11 @@ def execute_step(template, click_center, window, window_key):
     keep_running(window_key)
     take_screenshot(window_key)
     match = match_template(template, window_key)
+    if template == TEMPLATE["gather"]:
+        take_screenshot(window_key)
+        co_ordinates_text = text_recognition(loc["co_ordinates"],window_key)
+        co_ordinates_text = co_ordinates_text.split(" ")
+        print (co_ordinates_text)
     if match["exist"]:
         print("clicking match")
         click(match["loc"][0], match["loc"][1], window)

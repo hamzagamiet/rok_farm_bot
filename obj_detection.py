@@ -42,14 +42,19 @@ def text_recognition(cropping, window_key):
 
     SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window_key}.jpg")
     print (window_key)
-    TROOPS_DISPATCHED_DIR = os.path.join(BASE_DIR, "static", f"gathers_number_{window_key}.jpg")
+    TEMPLATE_DIR = os.path.join(BASE_DIR, "static", f"template_{window_key}.jpg")
     image = Image.open(SOURCE_DIR)
     image_cropped = image.crop((x0, y0, x1, y1))
-    image_cropped.save(TROOPS_DISPATCHED_DIR)
+    image_cropped.save(TEMPLATE_DIR)
 
-    image = cv2.imread(TROOPS_DISPATCHED_DIR)
+    image = cv2.imread(TEMPLATE_DIR)
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    ret, thresh_image = cv2.threshold(gray_image, 150, 255, cv2.THRESH_BINARY_INV)
+    if x0 == 1356 and y0 == 282 and x1 == 1514 and y1 == 321:
+        print ("here")
+        custom_config = r"--oem 3 eng --psm 6"
+        ret, thresh_image = cv2.threshold(gray_image, 200, 255, cv2.THRESH_BINARY)
+    else:
+        ret, thresh_image = cv2.threshold(gray_image, 150, 255, cv2.THRESH_BINARY_INV)
     text = read_text(thresh_image)
     print(text)
 

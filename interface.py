@@ -2,13 +2,10 @@ from tkinter import *
 from tkinter import ttk
 from pathlib import Path
 import os
-from game_operations import main
-from multiprocessing import Process
 import threading
 import json
 from subprocess import Popen
 import requests
-import random
 
 #INITIAL DECLARATIONS
 BASE_DIR = Path(__file__).resolve().parent
@@ -61,18 +58,18 @@ class Home(Frame):
         Frame.__init__(self)
         # self.scollbar = Scrollbar(Home, orient= VERTICAL)
         self.root = root
+
         with open('license.txt', "a+") as file_data:
             file_data.seek(0)
             text = file_data.read()
             print(text)
             key_activated = False
             if len(text) > 0:
-                response = requests.get(f"https://www.therokhub.com/secretaccess/farm/check_license/{text}/{random(1000)}")
+                response = requests.get(f"https://www.therokhub.com/secretaccess/farm/check_license/{text}", verify=False)
                 print(response)
                 response_json = response.json()
                 if response_json["status"] == "active":
                     key_activated = True
-
 
         if not key_activated:
             self.key_entry = Entry(root, width=50)
