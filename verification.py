@@ -12,6 +12,8 @@ BASE_DIR = Path(__file__).resolve().parent
 
 def check_verification(func):
     def wrapper(action, window, window_key):
+        detect_end_script(window_key)
+        
         take_screenshot(window_key)
         TEMPLATE_DIR = os.path.join(BASE_DIR, "assets", "verify.jpg")
         verify_button_match = match_template(TEMPLATE_DIR, window_key)
@@ -37,6 +39,8 @@ def check_verification(func):
     return wrapper
 
 def complete_verification(window, window_key):
+    detect_end_script(window_key)
+
     take_screenshot(window_key)
     SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window_key}.jpg")
     TEMPLATE_LIST_DIR = os.path.join(BASE_DIR, "static", f"verification_template_list_{window_key}.jpg")

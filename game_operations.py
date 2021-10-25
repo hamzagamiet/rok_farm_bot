@@ -9,7 +9,6 @@ from pathlib import Path
 from bot_settings import get_action_list
 import time
 import json
-import sys
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -23,13 +22,62 @@ def main():
     resource_list = [data[window_key][n]["resource"] for n in data[window_key]]
     requested_actions = get_action_list(resource_list)
     while True:
-        for action in requested_actions:
-            time.sleep(1)
-            if within_limit(len(requested_actions), window, window_key):
-                execute_action(action, window, window_key)
-            else:
-                print(f"already have {len(requested_actions)} marches dispatched")
-                keep_running(window_key)
+        action = requested_actions[0]
+        time.sleep(1)
+        if within_limit(len(requested_actions), window, window_key):
+            if execute_action(action, window, window_key):
+                requested_actions.append(requested_actions[0])
+                del requested_actions[0]
+        else:
+            print(f"already have {len(requested_actions)} marches dispatched")
+            detect_end_script(window_key)
+
+
+def within_limit(no_actions, window, window_key):
+    take_screenshot(window_key)
+    troop_dispatch_text = text_recognition(loc["no_gatherers"],window_key)
+    try:
+        troops_dispatched = troop_dispatch_text.split("/")[0]
+        if troops_dispatched == "s":
+            troops_dispatched = 5
+        if no_actions <= int(troops_dispatched):
+            return False            
+    finally:
+        return True
+
+@check_verification
+@return_to_game
+@troops_available
+def execute_action(action, window, window_key):
+    complete = False
+    for step in action:
+        click_center = False
+        if step == TEMPLATE["search_loc"]:
+            click_center = True
+        time.sleep(1)
+        if step == TEMPLATE["march"]:
+            if match_template(step, window_key)["exist"]:
+                complete = True  
+        execute_step(step, click_center, window, window_key)
+    return complete
+
+def execute_step(template, click_center, window, window_key):
+    detect_end_script(window_key)
+    take_screenshot(window_key)
+    match = match_template(template, window_key)
+    if template == TEMPLATE["gather"]:
+        take_screenshot(window_key)
+        co_ordinates_text = text_recognition(loc["co_ordinates"],window_key)
+        co_ordinates_text = co_ordinates_text.split(" ")
+        print (co_ordinates_text)
+    if match["exist"]:
+        print("clicking match")
+        click(match["loc"][0], match["loc"][1], window)
+        if click_center == True:
+            time.sleep(3)
+            click(1920 / 2, 1080 / 2, window)
+    else:
+        print("no match found")
 
 def return_to_game(func):
     def wrapper(action, window, window_key):
@@ -100,67 +148,5 @@ def troops_available(func):
             print("no marches available")
     return wrapper
 
-def within_limit(no_actions, window, window_key):
-    take_screenshot(window_key)
-    troop_dispatch_text = text_recognition(loc["no_gatherers"],window_key)
-    try:
-        troops_dispatched = troop_dispatch_text.split("/")[0]
-        if troops_dispatched == "s":
-            troops_dispatched = 5
-        if no_actions <= int(troops_dispatched):
-            print("troop limit reached")
-            return False
-        else:
-            print ("sending troops")            
-    except:
-        print("cannot read troop info")
-    return True
-    
-def keep_running(window_key):
-    match = False
-    with open("data.json", "r") as file:
-        data_list = json.load(file)
-        for data in data_list:
-            print(data)
-            for key in data:
-                print(key)
-                if key == window_key:
-                    match = True
-                    break
-            if match:
-                break
-        if match == False:
-            print("ending")
-            sys.exit()
-
-@check_verification
-@return_to_game
-@troops_available
-def execute_action(action, window, window_key):
-    for step in action:
-        click_center = False
-        if step == TEMPLATE["search_loc"]:
-            click_center = True
-        time.sleep(1)       
-        execute_step(step, click_center, window, window_key)
-
-def execute_step(template, click_center, window, window_key):
-    keep_running(window_key)
-    take_screenshot(window_key)
-    match = match_template(template, window_key)
-    if template == TEMPLATE["gather"]:
-        take_screenshot(window_key)
-        co_ordinates_text = text_recognition(loc["co_ordinates"],window_key)
-        co_ordinates_text = co_ordinates_text.split(" ")
-        print (co_ordinates_text)
-    if match["exist"]:
-        print("clicking match")
-        click(match["loc"][0], match["loc"][1], window)
-        if click_center == True:
-            time.sleep(3)
-            click(1920 / 2, 1080 / 2, window)
-    else:
-        print("no match found")
-        
 if __name__ == "__main__":
    main()

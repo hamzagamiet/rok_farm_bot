@@ -6,8 +6,23 @@ import win32con
 import win32api
 from PIL import Image, ImageOps
 import pyautogui
+import sys
 
 BASE_DIR = Path(__file__).resolve().parent
+
+def detect_end_script(window_key):
+    match = False
+    with open("data.json", "r") as file:
+        data_list = json.load(file)
+        for data in data_list:
+            for key in data:
+                if key == window_key:
+                    match = True
+                    break
+            if match:
+                break
+        if match == False:
+            sys.exit()
 
 def take_screenshot(window_key):
     SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window_key}.jpg")
