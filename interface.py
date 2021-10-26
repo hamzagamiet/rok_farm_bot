@@ -6,22 +6,26 @@ import threading
 import json
 from subprocess import Popen
 import requests
+from pywinauto import Desktop
 
-#INITIAL DECLARATIONS
+# INITIAL DECLARATIONS
 BASE_DIR = Path(__file__).resolve().parent
 root = Tk()
 
-def create_combobox(root, options, current_val = None):
-    print (current_val)
-    node = ttk.Combobox(root, value = options)
+
+def create_combobox(root, options, current_val=None):
+    print(current_val)
+    node = ttk.Combobox(root, value=options)
     node.current(current_val)
     return node
+
 
 def combobox_value_index(options, value):
     for index in range(len(options)):
         if options[index] == value:
             return index
     return None
+
 
 def change_window(frame):
     frame.tkraise()
@@ -30,16 +34,16 @@ def change_window(frame):
 root.title("ROKBot")
 
 root.geometry("500x500")
-root.minsize(500,500)
-root.maxsize(500,500)
+root.minsize(500, 500)
+root.maxsize(500, 500)
 my_menu = Menu(root)
 root.config(menu=my_menu)
 style = ttk.Style(root)
 style.theme_use("vista")
 
-    #CREATE ITEMS
+# CREATE ITEMS
 account = Menu(my_menu)
-my_menu.add_cascade(label="Bot",menu=account)
+my_menu.add_cascade(label="Bot", menu=account)
 activate = Menu(my_menu)
 my_menu.add_cascade(label="Activate", menu=activate)
 activate.add_command(label="Enter Key")
@@ -48,24 +52,28 @@ activate.add_command(label="Buy Key")
 discord = Menu(my_menu)
 my_menu.add_cascade(label="Discord", menu=discord)
 
+
 def show_frame(frame):
-    '''Show a frame for the given page name'''
+    """Show a frame for the given page name"""
     frame.tkraise()
 
-class Home(Frame):
 
+class Home(Frame):
     def __init__(self, root):
         Frame.__init__(self)
         # self.scollbar = Scrollbar(Home, orient= VERTICAL)
         self.root = root
 
-        with open('license.txt', "a+") as file_data:
+        with open("license.txt", "a+") as file_data:
             file_data.seek(0)
             text = file_data.read()
             print(text)
             key_activated = False
             if len(text) > 0:
-                response = requests.get(f"https://www.therokhub.com/secretaccess/farm/check_license/{text}", verify=False)
+                response = requests.get(
+                    f"https://www.therokhub.com/secretaccess/farm/check_license/{text}",
+                    verify=False,
+                )
                 print(response)
                 response_json = response.json()
                 if response_json["status"] == "active":
@@ -73,24 +81,37 @@ class Home(Frame):
 
         if not key_activated:
             self.key_entry = Entry(root, width=50)
-            self.key_entry.grid(row = 1, column = 1, padx =40, pady = 2, sticky="nsew")                                   
-            self.submit_key = Button(root, text= "SUBMIT", command=self.key_submission)
-            self.submit_key.grid(row = 2, column = 1, padx =40, pady = 2, sticky="nsew") 
-        
+            self.key_entry.grid(row=1, column=1, padx=40, pady=2, sticky="nsew")
+            self.submit_key = Button(root, text="SUBMIT", command=self.key_submission)
+            self.submit_key.grid(row=2, column=1, padx=40, pady=2, sticky="nsew")
+        windows = Desktop(backend="uia").windows()
+        bluestacks_instances = [
+            w.window_text() for w in windows if "BlueStacks" in w.window_text()
+        ]
+        print()
         if key_activated:
             self.instance_treeview = ttk.Treeview(root)
             self.instance_treeview["columns"] = ("Instance", "Running", "State")
             self.instance_treeview.column("#0", width=60)
-            self.instance_treeview.column("Instance", anchor =W, width=130)
-            self.instance_treeview.column("Running", anchor =W, width=130)
-            self.instance_treeview.column("State", anchor =W, width=130)
-            self.instance_treeview.heading("#0", text = "Label", anchor= W)
-            self.instance_treeview.heading("Instance", text = "Instance", anchor= W)
-            self.instance_treeview.heading("Running", text = "Running", anchor= W)
-            self.instance_treeview.heading("State", text = "State", anchor= W)
-            self.instance_treeview.insert(parent="",index="end", iid=0, text="", values=("Bluestacks", 0, 0))
-            self.instance_treeview.insert(parent="",index="end", iid=1, text="", values=("Bluestacks 1", 0, 0))
-            self.instance_treeview.grid(row = 1, column = 1, columnspan = 8, padx =25, pady = 2, sticky="nsew")
+            self.instance_treeview.column("Instance", anchor=W, width=130)
+            self.instance_treeview.column("Running", anchor=W, width=130)
+            self.instance_treeview.column("State", anchor=W, width=130)
+            self.instance_treeview.heading("#0", text="Label", anchor=W)
+            self.instance_treeview.heading("Instance", text="Instance", anchor=W)
+            self.instance_treeview.heading("Running", text="Running", anchor=W)
+            self.instance_treeview.heading("State", text="State", anchor=W)
+            print(bluestacks_instances)
+            for n in range(len(bluestacks_instances)):
+                self.instance_treeview.insert(
+                    parent="",
+                    index="end",
+                    iid=n,
+                    text="",
+                    values=(bluestacks_instances[-(n+1)], 0, 0),
+                )
+            self.instance_treeview.grid(
+                row=1, column=1, columnspan=8, padx=25, pady=2, sticky="nsew"
+            )
             self.instance_treeview.bind("<Double-1>", self.OnDoubleClick)
 
     def key_submission(self):
@@ -99,11 +120,11 @@ class Home(Frame):
         response = requests.get(url)
         response_json = response.json()
         if response_json["status"] == "active":
-            print ("ACTIVATED")
-            with open('license.txt', 'w+') as file:
+            print("ACTIVATED")
+            with open("license.txt", "w+") as file:
                 file.write(key_submit)
         else:
-            print ("NOT ACTIVATED")
+            print("NOT ACTIVATED")
         show_frame(Home(root))
 
     def OnDoubleClick(self, event):
@@ -112,42 +133,53 @@ class Home(Frame):
             instance = self.instance_treeview.item(i, "values")[0]
         show_frame(FarmingWindow(self.root, instance))
 
+
 class FarmingWindow(Frame):
     def __init__(self, root, window):
         Frame.__init__(self)
         n = 100
-        self.page_title = Label(root, text = window)
+        self.page_title = Label(root, text=window)
         self.window = window
-        self.options = ["Wood", "Food", "Stone","Gold"]
+        self.options = ["Wood", "Food", "Stone", "Gold"]
         self.int_val1 = IntVar()
         self.int_val2 = IntVar()
         self.int_val3 = IntVar()
         self.int_val4 = IntVar()
         self.int_val5 = IntVar()
-        self.is_active1 = Checkbutton(root,variable=self.int_val1, onvalue=1, offvalue=0, text= "March 1")
+        self.is_active1 = Checkbutton(
+            root, variable=self.int_val1, onvalue=1, offvalue=0, text="March 1"
+        )
         self.node1 = create_combobox(root, self.options)
-        self.is_active2 = Checkbutton(root,variable=self.int_val2, onvalue=1, offvalue=0, text= "March 2")
+        self.is_active2 = Checkbutton(
+            root, variable=self.int_val2, onvalue=1, offvalue=0, text="March 2"
+        )
         self.node2 = create_combobox(root, self.options)
-        self.is_active3 = Checkbutton(root,variable=self.int_val3, onvalue=1, offvalue=0, text= "March 3")
+        self.is_active3 = Checkbutton(
+            root, variable=self.int_val3, onvalue=1, offvalue=0, text="March 3"
+        )
         self.node3 = create_combobox(root, self.options)
-        self.is_active4 = Checkbutton(root,variable=self.int_val4, onvalue=1, offvalue=0, text= "March 4")
+        self.is_active4 = Checkbutton(
+            root, variable=self.int_val4, onvalue=1, offvalue=0, text="March 4"
+        )
         self.node4 = create_combobox(root, self.options)
-        self.is_active5 = Checkbutton(root,variable=self.int_val5, onvalue=1, offvalue=0, text= "March 5")
+        self.is_active5 = Checkbutton(
+            root, variable=self.int_val5, onvalue=1, offvalue=0, text="March 5"
+        )
         self.node5 = create_combobox(root, self.options)
-        self.start_stop = Button(root, text= "START", command=self.start_bot_thread)
-        self.page_title.grid(row = 2, column = 1, pady = 2, sticky="nsew")
-        self.is_active1.grid(row = 3, column = 1, pady = 2, sticky="nsew")
-        self.node1.grid(row = 3, column = 3, pady = 2, sticky="nsew")
-        self.is_active2.grid(row = 4, column = 1, pady = 2, sticky="nsew")
-        self.node2.grid(row = 4, column = 3, pady = 2, sticky="nsew")
-        self.is_active3.grid(row = 5, column = 1, pady = 2, sticky="nsew")
-        self.node3.grid(row = 5, column = 3, pady = 2, sticky="nsew")
-        self.is_active4.grid(row = 6, column = 1, pady = 2, sticky="nsew")
-        self.node4.grid(row = 6, column = 3, pady = 2, sticky="nsew")
-        self.is_active5.grid(row = 7, column = 1, pady = 2, sticky="nsew")
-        self.node5.grid(row = 7, column = 3, pady = 2, sticky="nsew")
-        self.start_stop.grid(row = 8, column = 1, padx=25, pady = 2, sticky="nsew")
-        
+        self.start_stop = Button(root, text="START", command=self.start_bot_thread)
+        self.page_title.grid(row=2, column=1, pady=2, sticky="nsew")
+        self.is_active1.grid(row=3, column=1, pady=2, sticky="nsew")
+        self.node1.grid(row=3, column=3, pady=2, sticky="nsew")
+        self.is_active2.grid(row=4, column=1, pady=2, sticky="nsew")
+        self.node2.grid(row=4, column=3, pady=2, sticky="nsew")
+        self.is_active3.grid(row=5, column=1, pady=2, sticky="nsew")
+        self.node3.grid(row=5, column=3, pady=2, sticky="nsew")
+        self.is_active4.grid(row=6, column=1, pady=2, sticky="nsew")
+        self.node4.grid(row=6, column=3, pady=2, sticky="nsew")
+        self.is_active5.grid(row=7, column=1, pady=2, sticky="nsew")
+        self.node5.grid(row=7, column=3, pady=2, sticky="nsew")
+        self.start_stop.grid(row=8, column=1, padx=25, pady=2, sticky="nsew")
+
         try:
             with open("gui_data.json", "r") as file:
                 data = json.load(file)
@@ -166,11 +198,31 @@ class FarmingWindow(Frame):
                                 self.is_active5.select()
                             if data[n][key]["start_stop"] == "STOP":
                                 self.start_stop.config(text="STOP")
-                            self.node1.current(combobox_value_index(self.options, data[n][key]["node1"]))
-                            self.node2.current(combobox_value_index(self.options, data[n][key]["node2"]))
-                            self.node3.current(combobox_value_index(self.options, data[n][key]["node3"]))
-                            self.node4.current(combobox_value_index(self.options, data[n][key]["node4"]))
-                            self.node5.current(combobox_value_index(self.options, data[n][key]["node5"]))
+                            self.node1.current(
+                                combobox_value_index(
+                                    self.options, data[n][key]["node1"]
+                                )
+                            )
+                            self.node2.current(
+                                combobox_value_index(
+                                    self.options, data[n][key]["node2"]
+                                )
+                            )
+                            self.node3.current(
+                                combobox_value_index(
+                                    self.options, data[n][key]["node3"]
+                                )
+                            )
+                            self.node4.current(
+                                combobox_value_index(
+                                    self.options, data[n][key]["node4"]
+                                )
+                            )
+                            self.node5.current(
+                                combobox_value_index(
+                                    self.options, data[n][key]["node5"]
+                                )
+                            )
         except:
             print("this file is not currently running")
 
@@ -188,27 +240,28 @@ class FarmingWindow(Frame):
                             "resource": requested_actions[n],
                             "status": "waiting",
                             "co-ords": [],
-                            "commander": "none"
-                        } for n in range(len(requested_actions))
+                            "commander": "none",
+                        }
+                        for n in range(len(requested_actions))
                     }
                 }
                 current_data = [current_data_dict]
                 try:
                     with open("data.json", "r") as file:
                         data = json.load(file)
-                        data.insert(0,current_data_dict)
+                        data.insert(0, current_data_dict)
                 except:
                     print("couldn't load data")
                 with open("data.json", "w+") as file:
                     try:
                         print("existing data")
-                        json.dump(data, file, indent=4, separators=(',', ': '))
+                        json.dump(data, file, indent=4, separators=(",", ": "))
                     except:
                         print("broken data")
-                        json.dump(current_data, file, indent=4, separators=(',', ': '))
-                
+                        json.dump(current_data, file, indent=4, separators=(",", ": "))
+
                 current_gui_data_dict = {
-                    self.window:{
+                    self.window: {
                         "int_val1": self.int_val1.get(),
                         "int_val2": self.int_val2.get(),
                         "int_val3": self.int_val3.get(),
@@ -219,29 +272,31 @@ class FarmingWindow(Frame):
                         "node3": self.node3.get(),
                         "node4": self.node4.get(),
                         "node5": self.node5.get(),
-                        "start_stop": self.start_stop.cget("text")
+                        "start_stop": self.start_stop.cget("text"),
                     }
                 }
                 current_gui_data = [current_gui_data_dict]
                 try:
                     with open("gui_data.json", "r") as file:
                         gui_data = json.load(file)
-                        gui_data.insert(0,current_gui_data_dict)
+                        gui_data.insert(0, current_gui_data_dict)
                 except:
                     print("couldn't load gui data")
                 file.close()
                 with open("gui_data.json", "w+") as file:
                     try:
-                        #work if existing file
-                        json.dump(gui_data, file, indent=4, separators=(',', ': '))
+                        # work if existing file
+                        json.dump(gui_data, file, indent=4, separators=(",", ": "))
                         print("existing gui data")
                     except:
-                        #work if creating from scratch
-                        json.dump(current_gui_data, file, indent=4, separators=(',', ': '))
+                        # work if creating from scratch
+                        json.dump(
+                            current_gui_data, file, indent=4, separators=(",", ": ")
+                        )
                         print("broken gui data")
                 file.close()
                 Popen("python game_operations.py")
-        
+
         elif self.start_stop.cget("text") == "STOP":
             self.start_stop.config(text="START")
             try:
@@ -254,16 +309,18 @@ class FarmingWindow(Frame):
                                 file.close()
                                 with open("data.json", "w+") as file:
                                     try:
-                                        json.dump(data, file, indent=4, separators=(',', ': '))
+                                        json.dump(
+                                            data, file, indent=4, separators=(",", ": ")
+                                        )
                                     finally:
                                         file.close()
             except:
                 pass
             try:
                 with open("gui_data.json", "r") as file:
-                    print ("try")
+                    print("try")
                     gui_data = json.load(file)
-                    print ("here")
+                    print("here")
                     for n in range(len(gui_data)):
                         for key in gui_data[n]:
                             if key == self.window:
@@ -272,7 +329,12 @@ class FarmingWindow(Frame):
                                 file.close()
                                 with open("gui_data.json", "w+") as file:
                                     try:
-                                        json.dump(gui_data, file, indent=4, separators=(',', ': '))
+                                        json.dump(
+                                            gui_data,
+                                            file,
+                                            indent=4,
+                                            separators=(",", ": "),
+                                        )
                                     except:
                                         pass
             except:
@@ -314,16 +376,19 @@ class FarmingWindow(Frame):
 
         return requested_actions
 
+
 show_frame(Home(root))
 # Button(f2, text="window1", command=f1).pack()
 # Button(f1, text="window2", command=f2).pack()
+
 
 class FarmingInfo:
     def __init__(self):
         self.coordinates = []
         self.is_active = False
-        self.resource =  "None"
+        self.resource = "None"
         self.commander = "None"
+
 
 def delete_on_exit():
     try:
@@ -335,6 +400,7 @@ def delete_on_exit():
     except:
         print("cannot find")
     root.destroy()
+
 
 root.protocol("WM_DELETE_WINDOW", delete_on_exit)
 

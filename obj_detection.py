@@ -5,10 +5,13 @@ from PIL import Image, ImageOps
 import pytesseract
 
 BASE_DIR = Path(__file__).resolve().parent
-tesseract_location = os.path.join(BASE_DIR, "support","tesseract_install", "tesseract.exe")
+tesseract_location = os.path.join(
+    BASE_DIR, "support", "tesseract_install", "tesseract.exe"
+)
 pytesseract.pytesseract.tesseract_cmd = (
     tesseract_location  # Location of tesseract.eve file
 )
+
 
 def match_template(template, window_key):
     SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window_key}.jpg")
@@ -24,12 +27,9 @@ def match_template(template, window_key):
         match_exist = True
     template_h, template_w = template_img.shape
     location = [max_loc[0] + template_w / 2, (max_loc[1] + template_h / 2)]
-    context = {
-        "exist": match_exist,
-        "loc": location,
-        "max_val": max_val
-    }
+    context = {"exist": match_exist, "loc": location, "max_val": max_val}
     return context
+
 
 def read_text(image):
     custom_config = r"--oem 3 kor+chi_sim+eng+jpn+vie --psm 6"
@@ -38,10 +38,10 @@ def read_text(image):
 
 
 def text_recognition(cropping, window_key):
-    x0, y0, x1, y1 = cropping["x0"], cropping["y0"], cropping ["x1"], cropping["y1"]
+    x0, y0, x1, y1 = cropping["x0"], cropping["y0"], cropping["x1"], cropping["y1"]
 
     SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window_key}.jpg")
-    print (window_key)
+    print(window_key)
     TEMPLATE_DIR = os.path.join(BASE_DIR, "static", f"template_{window_key}.jpg")
     image = Image.open(SOURCE_DIR)
     image_cropped = image.crop((x0, y0, x1, y1))
@@ -50,7 +50,7 @@ def text_recognition(cropping, window_key):
     image = cv2.imread(TEMPLATE_DIR)
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     if x0 == 1356 and y0 == 282 and x1 == 1514 and y1 == 321:
-        print ("here")
+        print("here")
         custom_config = r"--oem 3 eng --psm 6"
         ret, thresh_image = cv2.threshold(gray_image, 200, 255, cv2.THRESH_BINARY)
     else:

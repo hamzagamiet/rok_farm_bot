@@ -5,7 +5,7 @@ import win32gui
 import os
 
 BASE_DIR = Path(__file__).resolve().parent
-    
+
 wood_action = [
     TEMPLATE["search"],
     TEMPLATE["wood"],
@@ -39,6 +39,7 @@ stone_action = [
     TEMPLATE["march"],
 ]
 
+
 def get_action_list(resource_list):
     action_list = []
     for resource in resource_list:
@@ -51,6 +52,7 @@ def get_action_list(resource_list):
         elif resource.lower() == "gold":
             action_list.append(gold_action)
     return action_list
+
 
 def march_info(self):
     march_list = [

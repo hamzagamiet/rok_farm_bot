@@ -10,6 +10,7 @@ import sys
 
 BASE_DIR = Path(__file__).resolve().parent
 
+
 def detect_end_script(window_key):
     match = False
     with open("data.json", "r") as file:
@@ -23,6 +24,7 @@ def detect_end_script(window_key):
                 break
         if match == False:
             sys.exit()
+
 
 def take_screenshot(window_key):
     SOURCE_DIR = os.path.join(BASE_DIR, "static", f"source_{window_key}.jpg")
@@ -66,12 +68,10 @@ def take_screenshot(window_key):
 def get_window_size(window):
     rect = win32gui.GetWindowRect(window)
     x0, y0, x1, y1 = rect[0], rect[1], rect[2], rect[3]
-    w, h = x1 - x0, y1-y0
-    context = [
-        w,
-        h
-    ]
+    w, h = x1 - x0, y1 - y0
+    context = [w, h]
     return context
+
 
 def click(x, y, window):
     width = get_window_size(window)[0]
