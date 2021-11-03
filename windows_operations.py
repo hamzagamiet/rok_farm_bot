@@ -7,6 +7,7 @@ import win32api
 from PIL import Image, ImageOps
 import pyautogui
 import sys
+import json
 
 BASE_DIR = Path(__file__).resolve().parent
 

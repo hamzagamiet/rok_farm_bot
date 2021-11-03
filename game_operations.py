@@ -4,120 +4,199 @@ from screen_loc import locations as loc
 from obj_detection import *
 from template_files import template_paths as TEMPLATE
 import os
-from PIL import Image, ImageOps
+import json
 from pathlib import Path
 from bot_settings import get_action_list
 import time
-import json
 
 BASE_DIR = Path(__file__).resolve().parent
 
 
-def main():
-    with open("data.json", "r") as file:
-        data = json.load(file)[0]
-    for key in data:
-        window = key
-    window_key = window
-    window = win32gui.FindWindow(None, window_key)
-    resource_list = [data[window_key][n]["resource"] for n in data[window_key]]
-    requested_actions = get_action_list(resource_list)
-    while True:
-        action = requested_actions[0]
+class FarmingInformation:
+    def __init__(self):
+        self.start()
+
+    def start(self):
+        with open("data.json", "r") as file:
+            self.data = json.load(file)[0]
+        for key in self.data:
+            self.window_key = key
+        march_list = [
+            [self.data[self.window_key][n]["resource"], self.window_key]
+            for n in self.data[self.window_key]
+        ]
+        self.march_list = march_list
+        self.march_count = len(march_list)
+
+        while True:
+            print (self.march_list)
+            print (type(self.march_list))
+            march = FarmMarch(
+                resource = march_list[0][0], window_key = march_list[0][1], march_count = self.march_count
+            )
+            print (
+                f"{march.is_running}\n\n"
+                f"{march.resource}\n\n"
+                f"{march.action_list}\n\n"
+                f"{march.coordinates}\n\n"
+                f"{march.window_key}\n\n"
+                f"{march.window}\n\n"
+            )
+            time.sleep(1)
+            if GameCheck.check_dispatched_army(self.march_count, march.window_key):
+                if march.start():
+                    self.march_list = self.queue(march_list)
+            else:
+                detect_end_script(self.window_key)
+
+    def queue(self, march_list):
+        march_list.append(march_list[0])
+        del march_list[0]
+        return march_list
+
+
+class FarmMarch:
+
+    def __init__(
+        self, is_running=False, resource=None, coordinates=None, window_key=None, march_count = 0
+    ):
+        self.is_running = is_running
+        self.resource = resource
+        self.action_list = get_action_list(self.resource)
+        self.coordinates = coordinates
+        self.window_key = window_key
+        self.march_count = march_count
+        self.window = win32gui.FindWindow(None, self.window_key)
+
+        print ("instantiating...")
+        print (self.action_list)
         time.sleep(1)
-        if within_limit(len(requested_actions), window, window_key):
-            if execute_action(action, window, window_key):
-                requested_actions.append(requested_actions[0])
-                del requested_actions[0]
-        else:
-            print(f"already have {len(requested_actions)} marches dispatched")
-            detect_end_script(window_key)
 
-
-def within_limit(no_actions, window, window_key):
-    take_screenshot(window_key)
-    troop_dispatch_text = text_recognition(loc["no_gatherers"], window_key)
-    try:
-        troops_dispatched = troop_dispatch_text.split("/")[0]
-        if troops_dispatched == "s":
-            troops_dispatched = 5
-        if no_actions <= int(troops_dispatched):
-            return False
-    finally:
+    def start(self):
+        for self.action_index in range(len(self.action_list)):
+            while True:
+                if self.execute_action():
+                    break
         return True
 
-def return_to_game(func):
-    def wrapper(action, window, window_key):
+    def execute_action(self):
+        print("executing action")
+        check_verification(self.window_key, self.window)
+        GameCheck.return_to_game(self.window_key, self.window)
+        if GameCheck.check_troops_avilable(self.window_key):
+            print("you have troops available")
+            self.click_center = False
+            if GameCheck.check_dispatched_army(
+                self.march_count, self.window_key
+            ):
+                self.step = self.action_list[self.action_index]
+                print (self.step)
+            if self.step == TEMPLATE["search_loc"]:
+                self.click_center = True
+            self.execute_step()
+            print ("true")
+            time.sleep(2)
+            # take_screenshot(self.window_key)
+            # if (
+            #     not match_template(self.step, self.window_key)["exist"]
+            #     and self.action_index != 1
+            #     or self.action_index == 1
+            # ):
+            #     return False
+            print ("here")
+            return True
+        print("nothing")
+        return False
+
+    def execute_step(self):
+        print(self.step)
+        detect_end_script(self.window_key)
+        take_screenshot(self.window_key)
+        match = match_template(self.step, self.window_key)
+        if self.step == TEMPLATE["gather"]:
+            take_screenshot(self.window_key)
+            co_ordinates_text = text_recognition(loc["co_ordinates"], self.window_key)
+            co_ordinates_text = co_ordinates_text.split(" ")
+        if match["exist"]:
+            click(match["loc"][0], match["loc"][1], self.window)
+            if self.click_center == True:
+                time.sleep(3)
+                click(1920 / 2, 1080 / 2, self.window)
+        print ("done")
+
+
+class GameCheck:
+    def return_to_game(window_key, window):
         take_screenshot(window_key)
 
-        search_button = match_template(
-            os.path.join(BASE_DIR, "assets", f"search.jpg"), window_key
-        )
+        button_exceptions_files = [
+            "search.jpg",
+            "search_loc.jpg",
+            "new_troops.jpg",
+            "march.jpg"
+        ]
+        button_exceptions = [
+            match_template(os.path.join(BASE_DIR, "assets", button_file), window_key)
+            for button_file in button_exceptions_files
+        ]
 
-        while not search_button["exist"]:
-            exit_button = match_template(
-                os.path.join(BASE_DIR, "assets", f"exit_button.jpg"), window_key
-            )
-            chat_exit_button = match_template(
-                os.path.join(BASE_DIR, "assets", f"chat_exit.jpg"), window_key
-            )
-            confirm_button = match_template(
-                os.path.join(BASE_DIR, "assets", f"confirm_button.jpg"), window_key
-            )
-            game_launch_button = match_template(
-                os.path.join(BASE_DIR, "assets", f"game_launch_icon.jpg"), window_key
-            )
-            build_button = match_template(
-                os.path.join(BASE_DIR, "assets", f"build.jpg"), window_key
-            )
-            search_button = match_template(
-                os.path.join(BASE_DIR, "assets", f"search.jpg"), window_key
-            )
-            exit_button = match_template(
-                os.path.join(BASE_DIR, "assets", f"exit_button.jpg"), window_key
-            )
-            map_button = match_template(
-                os.path.join(BASE_DIR, "assets", f"map.jpg"), window_key
-            )
-
-            if exit_button["exist"]:
-                print("exit_button")
-                click(exit_button["loc"][0], exit_button["loc"][1], window)
-                time.sleep(3)
-
-            if chat_exit_button["exist"]:
-                print("exit_button")
-                click(chat_exit_button["loc"][0], chat_exit_button["loc"][1], window)
-                time.sleep(3)
-
-            if confirm_button["exist"]:
-                print("exit_button")
-                click(confirm_button["loc"][0], confirm_button["loc"][1], window)
-
-            if game_launch_button["exist"]:
-                print("exit_button")
-                click(
-                    game_launch_button["loc"][0], game_launch_button["loc"][1], window
+        for button in button_exceptions:
+            if button["exist"]:
+                print("break")
+                break
+            print("cannot")
+            while not button["exist"]:
+                exit_button = match_template(
+                    os.path.join(BASE_DIR, "assets", f"exit_button.jpg"), window_key
+                )
+                chat_exit_button = match_template(
+                    os.path.join(BASE_DIR, "assets", f"chat_exit.jpg"), window_key
+                )
+                confirm_button = match_template(
+                    os.path.join(BASE_DIR, "assets", f"confirm_button.jpg"), window_key
+                )
+                game_launch_button = match_template(
+                    os.path.join(BASE_DIR, "assets", f"game_launch_icon.jpg"), window_key
+                )
+                build_button = match_template(
+                    os.path.join(BASE_DIR, "assets", f"build.jpg"), window_key
+                )
+                search_button = match_template(
+                    os.path.join(BASE_DIR, "assets", f"search.jpg"), window_key
+                )
+                exit_button = match_template(
+                    os.path.join(BASE_DIR, "assets", f"exit_button.jpg"), window_key
+                )
+                map_button = match_template(
+                    os.path.join(BASE_DIR, "assets", f"map.jpg"), window_key
                 )
 
-            if build_button["exist"]:
-                click(map_button["loc"][0], map_button["loc"][1], window)
+                if exit_button["exist"]:
+                    click(exit_button["loc"][0], exit_button["loc"][1], window)
+                    time.sleep(3)
 
-            if exit_button["exist"]:
-                print("exit_button")
-                click(exit_button["loc"][0], exit_button["loc"][1], window)
+                if chat_exit_button["exist"]:
+                    click(chat_exit_button["loc"][0], chat_exit_button["loc"][1], window)
+                    time.sleep(3)
 
-            time.sleep(1)
-            print("attempting to return to game")
-            take_screenshot(window_key)
+                if confirm_button["exist"]:
+                    click(confirm_button["loc"][0], confirm_button["loc"][1], window)
 
-        func(action, window, window_key)
+                if game_launch_button["exist"]:
+                    click(
+                        game_launch_button["loc"][0], game_launch_button["loc"][1], window
+                    )
 
-    return wrapper
+                if build_button["exist"]:
+                    click(map_button["loc"][0], map_button["loc"][1], window)
 
+                if exit_button["exist"]:
+                    click(exit_button["loc"][0], exit_button["loc"][1], window)
 
-def troops_available(func):
-    def wrapper(action, window, window_key):
+                time.sleep(1)
+                take_screenshot(window_key)
+
+    def check_troops_avilable(window_key):
         take_screenshot(window_key)
         troop_dispatch_text = text_recognition(loc["no_gatherers"], window_key)
         try:
@@ -126,51 +205,27 @@ def troops_available(func):
         except:
             troops_dispatched = 0
             tot_troop_slots = 1
-        print(troops_dispatched, tot_troop_slots)
         if tot_troop_slots == "s" or "S":
             tot_troop_slots = 5
-        print(troops_dispatched)
         if int(troops_dispatched) != int(tot_troop_slots):
-            func(action, window, window_key)
+            return True
         else:
-            print("no marches available")
+            return False
 
-    return wrapper
-
-@check_verification
-@return_to_game
-@troops_available
-def execute_action(action, window, window_key):
-    complete = False
-    for step in action:
-        click_center = False
-        if step == TEMPLATE["search_loc"]:
-            click_center = True
-        time.sleep(1)
-        if step == TEMPLATE["march"]:
-            if match_template(step, window_key)["exist"]:
-                complete = True
-        execute_step(step, click_center, window, window_key)
-    return complete
-
-
-def execute_step(template, click_center, window, window_key):
-    detect_end_script(window_key)
-    take_screenshot(window_key)
-    match = match_template(template, window_key)
-    if template == TEMPLATE["gather"]:
+    def check_dispatched_army(no_marches, window_key):
         take_screenshot(window_key)
-        co_ordinates_text = text_recognition(loc["co_ordinates"], window_key)
-        co_ordinates_text = co_ordinates_text.split(" ")
-        print(co_ordinates_text)
-    if match["exist"]:
-        print("clicking match")
-        click(match["loc"][0], match["loc"][1], window)
-        if click_center == True:
-            time.sleep(3)
-            click(1920 / 2, 1080 / 2, window)
-    else:
-        print("no match found")
+        troop_dispatch_text = text_recognition(loc["no_gatherers"], window_key)
+        try:
+            troops_dispatched = troop_dispatch_text.split("/")[0]
+            if troops_dispatched == "s":
+                troops_dispatched = 5
+            if no_marches <= int(troops_dispatched):
+                return False
+            else:
+                return True
+        except:
+            return True
+
 
 if __name__ == "__main__":
-    main()
+    FarmingInformation()

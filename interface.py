@@ -88,7 +88,6 @@ class Home(Frame):
         bluestacks_instances = [
             w.window_text() for w in windows if "BlueStacks" in w.window_text()
         ]
-        print()
         if key_activated:
             self.instance_treeview = ttk.Treeview(root)
             self.instance_treeview["columns"] = ("Instance", "Running", "State")
@@ -100,14 +99,13 @@ class Home(Frame):
             self.instance_treeview.heading("Instance", text="Instance", anchor=W)
             self.instance_treeview.heading("Running", text="Running", anchor=W)
             self.instance_treeview.heading("State", text="State", anchor=W)
-            print(bluestacks_instances)
             for n in range(len(bluestacks_instances)):
                 self.instance_treeview.insert(
                     parent="",
                     index="end",
                     iid=n,
                     text="",
-                    values=(bluestacks_instances[-(n+1)], 0, 0),
+                    values=(bluestacks_instances[-(n + 1)], 0, 0),
                 )
             self.instance_treeview.grid(
                 row=1, column=1, columnspan=8, padx=25, pady=2, sticky="nsew"
@@ -239,7 +237,7 @@ class FarmingWindow(Frame):
                         n: {
                             "resource": requested_actions[n],
                             "status": "waiting",
-                            "co-ords": [],
+                            "co-ords": None,
                             "commander": "none",
                         }
                         for n in range(len(requested_actions))

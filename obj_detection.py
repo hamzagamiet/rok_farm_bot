@@ -52,7 +52,7 @@ def text_recognition(cropping, window_key):
     if x0 == 1356 and y0 == 282 and x1 == 1514 and y1 == 321:
         print("here")
         custom_config = r"--oem 3 eng --psm 6"
-        ret, thresh_image = cv2.threshold(gray_image, 200, 255, cv2.THRESH_BINARY)
+        ret, thresh_image = cv2.threshold(gray_image, 127, 255, cv2.THRESH_BINARY)
     else:
         ret, thresh_image = cv2.threshold(gray_image, 150, 255, cv2.THRESH_BINARY_INV)
     text = read_text(thresh_image)

@@ -2,14 +2,14 @@
     {
         "BlueStacks": {
             "int_val1": 1,
-            "int_val2": 0,
-            "int_val3": 0,
-            "int_val4": 0,
+            "int_val2": 1,
+            "int_val3": 1,
+            "int_val4": 1,
             "int_val5": 0,
-            "node1": "Food",
-            "node2": "",
-            "node3": "",
-            "node4": "",
+            "node1": "Stone",
+            "node2": "Stone",
+            "node3": "Stone",
+            "node4": "Stone",
             "node5": "",
             "start_stop": "STOP"
         }

@@ -12,38 +12,35 @@ from PIL import Image, ImageOps
 BASE_DIR = Path(__file__).resolve().parent
 
 
-def check_verification(func):
-    def wrapper(action, window, window_key):
-        detect_end_script(window_key)
+def check_verification(window_key, window):
+    detect_end_script(window_key)
 
-        take_screenshot(window_key)
-        TEMPLATE_DIR = os.path.join(BASE_DIR, "assets", "verify.jpg")
-        verify_button_match = match_template(TEMPLATE_DIR, window_key)
-        if verify_button_match["exist"]:
-            click(verify_button_match["loc"][0], verify_button_match["loc"][1], window)
-            time.sleep(5)
-            complete_verification(window, window_key)
-        TEMPLATE_DIR = os.path.join(BASE_DIR, "assets", "submit_verification.jpg")
-        submit_button_match = match_template(TEMPLATE_DIR, window_key)
-        if submit_button_match["exist"]:
-            while True:
-                if complete_verification(window, window_key):
-                    click(
-                        submit_button_match["loc"][0],
-                        submit_button_match["loc"][1],
-                        window,
-                    )
-                    time.sleep(10)
-                    take_screenshot(window_key)
-                    TEMPLATE_DIR = os.path.join(
-                        BASE_DIR, "assets", "submit_verification.jpg"
-                    )
-                    submit_button_match = match_template(TEMPLATE_DIR, window_key)
-                    if not submit_button_match["exist"]:
-                        break
-        func(action, window, window_key)
-
-    return wrapper
+    take_screenshot(window_key)
+    TEMPLATE_DIR = os.path.join(BASE_DIR, "assets", "verify.jpg")
+    verify_button_match = match_template(TEMPLATE_DIR, window_key)
+    if verify_button_match["exist"]:
+        click(verify_button_match["loc"][0], verify_button_match["loc"][1], window)
+        time.sleep(5)
+        complete_verification(window, window_key)
+    TEMPLATE_DIR = os.path.join(BASE_DIR, "assets", "submit_verification.jpg")
+    submit_button_match = match_template(TEMPLATE_DIR, window_key)
+    if submit_button_match["exist"]:
+        while True:
+            if complete_verification(window, window_key):
+                click(
+                    submit_button_match["loc"][0],
+                    submit_button_match["loc"][1],
+                    window,
+                )
+                time.sleep(10)
+                take_screenshot(window_key)
+                TEMPLATE_DIR = os.path.join(
+                    BASE_DIR, "assets", "submit_verification.jpg"
+                )
+                submit_button_match = match_template(TEMPLATE_DIR, window_key)
+                if not submit_button_match["exist"]:
+                    break
+        return True
 
 
 def complete_verification(window, window_key):

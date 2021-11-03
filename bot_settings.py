@@ -40,17 +40,16 @@ stone_action = [
 ]
 
 
-def get_action_list(resource_list):
+def get_action_list(resource):
     action_list = []
-    for resource in resource_list:
-        if resource.lower() == "wood":
-            action_list.append(wood_action)
-        elif resource.lower() == "food":
-            action_list.append(food_action)
-        elif resource.lower() == "stone":
-            action_list.append(stone_action)
-        elif resource.lower() == "gold":
-            action_list.append(gold_action)
+    if resource.lower() == "wood":
+        action_list = wood_action
+    elif resource.lower() == "food":
+        action_list = food_action
+    elif resource.lower() == "stone":
+        action_list = stone_action
+    elif resource.lower() == "gold":
+        action_list = gold_action
     return action_list
 
 
