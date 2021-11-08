@@ -138,63 +138,67 @@ class GameCheck:
         button_exceptions = [
             match_template(os.path.join(BASE_DIR, "assets", button_file), window_key)
             for button_file in button_exceptions_files
-        ]
+        ]   
 
-        for button in button_exceptions:
-            if button["exist"]:
-                print("break")
+        while True:
+
+            button_exist = False
+            for button in button_exceptions:
+                if button["exist"]:
+                    button_exist = True
+                    break
+            if button_exist:
                 break
-            print("cannot")
-            while not button["exist"]:
-                exit_button = match_template(
-                    os.path.join(BASE_DIR, "assets", f"exit_button.jpg"), window_key
-                )
-                chat_exit_button = match_template(
-                    os.path.join(BASE_DIR, "assets", f"chat_exit.jpg"), window_key
-                )
-                confirm_button = match_template(
-                    os.path.join(BASE_DIR, "assets", f"confirm_button.jpg"), window_key
-                )
-                game_launch_button = match_template(
-                    os.path.join(BASE_DIR, "assets", f"game_launch_icon.jpg"), window_key
-                )
-                build_button = match_template(
-                    os.path.join(BASE_DIR, "assets", f"build.jpg"), window_key
-                )
-                search_button = match_template(
-                    os.path.join(BASE_DIR, "assets", f"search.jpg"), window_key
-                )
-                exit_button = match_template(
-                    os.path.join(BASE_DIR, "assets", f"exit_button.jpg"), window_key
-                )
-                map_button = match_template(
-                    os.path.join(BASE_DIR, "assets", f"map.jpg"), window_key
+
+            exit_button = match_template(
+                os.path.join(BASE_DIR, "assets", f"exit_button.jpg"), window_key
+            )
+            chat_exit_button = match_template(
+                os.path.join(BASE_DIR, "assets", f"chat_exit.jpg"), window_key
+            )
+            confirm_button = match_template(
+                os.path.join(BASE_DIR, "assets", f"confirm_button.jpg"), window_key
+            )
+            game_launch_button = match_template(
+                os.path.join(BASE_DIR, "assets", f"game_launch_icon.jpg"), window_key
+            )
+            build_button = match_template(
+                os.path.join(BASE_DIR, "assets", f"build.jpg"), window_key
+            )
+            search_button = match_template(
+                os.path.join(BASE_DIR, "assets", f"search.jpg"), window_key
+            )
+            exit_button = match_template(
+                os.path.join(BASE_DIR, "assets", f"exit_button.jpg"), window_key
+            )
+            map_button = match_template(
+                os.path.join(BASE_DIR, "assets", f"map.jpg"), window_key
+            )
+
+            if exit_button["exist"]:
+                click(exit_button["loc"][0], exit_button["loc"][1], window)
+                time.sleep(3)
+
+            if chat_exit_button["exist"]:
+                click(chat_exit_button["loc"][0], chat_exit_button["loc"][1], window)
+                time.sleep(3)
+
+            if confirm_button["exist"]:
+                click(confirm_button["loc"][0], confirm_button["loc"][1], window)
+
+            if game_launch_button["exist"]:
+                click(
+                    game_launch_button["loc"][0], game_launch_button["loc"][1], window
                 )
 
-                if exit_button["exist"]:
-                    click(exit_button["loc"][0], exit_button["loc"][1], window)
-                    time.sleep(3)
+            if build_button["exist"]:
+                click(map_button["loc"][0], map_button["loc"][1], window)
 
-                if chat_exit_button["exist"]:
-                    click(chat_exit_button["loc"][0], chat_exit_button["loc"][1], window)
-                    time.sleep(3)
+            if exit_button["exist"]:
+                click(exit_button["loc"][0], exit_button["loc"][1], window)
 
-                if confirm_button["exist"]:
-                    click(confirm_button["loc"][0], confirm_button["loc"][1], window)
-
-                if game_launch_button["exist"]:
-                    click(
-                        game_launch_button["loc"][0], game_launch_button["loc"][1], window
-                    )
-
-                if build_button["exist"]:
-                    click(map_button["loc"][0], map_button["loc"][1], window)
-
-                if exit_button["exist"]:
-                    click(exit_button["loc"][0], exit_button["loc"][1], window)
-
-                time.sleep(1)
-                take_screenshot(window_key)
+            time.sleep(1)
+            take_screenshot(window_key)
 
     def check_troops_avilable(window_key):
         take_screenshot(window_key)
