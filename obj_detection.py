@@ -9,7 +9,7 @@ tesseract_location = os.path.join(
     BASE_DIR, "support", "tesseract_install", "tesseract.exe"
 )
 pytesseract.pytesseract.tesseract_cmd = (
-    tesseract_location  # Location of tesseract.eve file
+    tesseract_location  # Location of tesseract.exe file
 )
 
 
